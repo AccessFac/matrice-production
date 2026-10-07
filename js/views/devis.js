@@ -40,20 +40,29 @@ function planning(p, r) {
   </section>`;
 }
 
-function lignes(p, r) {
-  const names = sortedCatalogue().map(c => c.prestation).filter(Boolean);
-  let h = `<datalist id="dl-presta">${names.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
-  <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Choisissez une prestation du catalogue : catégorie, société et prix HT viennent du catalogue et ne se modifient pas ici.</span></div>
-  <div class="tbl-wrap"><table data-tbl="lignes"><thead><tr>
-    <th style="min-width:250px">Prestation</th><th style="min-width:150px">Catégorie</th><th style="min-width:150px">Société</th>
-    <th>Unité</th><th class="num">Qté</th><th class="num">PU HT</th><th class="num" title="Remise en % sur la ligne">Remise</th>
-    <th class="num">Total HT</th><th style="min-width:200px">Notes</th><th></th></tr></thead><tbody>`;
-  for (const l of p.lignes || []) {
-    const al = dayAlert(l, r);
-    const rem = num(l.remise) ? nstr(Math.round(num(l.remise) * 1000) / 10) : "";
-    h += `<tr data-row="lignes" data-id="${l.id}">
-      <td><input class="cell" id="l-${l.id}-p" data-f="prestation" list="dl-presta" value="${esc(l.prestation)}" placeholder="Prestation…">${al ? `<span class="alert">⚠ ${esc(al)}</span>` : ""}${l.prestation && !findInCatalogue(l.prestation) ? `<span class="alert">⚠ Prestation absente du catalogue : ajoutez-la au catalogue pour fixer catégorie, société et prix.</span>` : ""}</td>
-      <td class="lbl locked" title="Défini par le catalogue">${esc(l.categorie) || "—"}</td>
+/** Lignes regroupées par catégorie, dans l'ordre du tableau p.lignes (ordre de première apparition). */
+export function groupLines(lines) {
+  const groups = [];
+  const byCat = new Map();
+  for (const l of lines || []) {
+    const cat = l.categorie || "";
+    if (!byCat.has(cat)) { const g = { cat, lines: [] }; byCat.set(cat, g); groups.push(g); }
+    byCat.get(cat).lines.push(l);
+  }
+  // les lignes sans catégorie (pas encore choisies) restent toujours en bas
+  return groups.sort((a, b) => (!a.cat) - (!b.cat));
+}
+
+export const groupKey = cat => "gt-" + encodeURIComponent(cat || "_");
+export function groupTotal(g) { return g.lines.reduce((a, l) => a + (lineTotal(l) || 0), 0); }
+
+function ligne(l, r) {
+  const al = dayAlert(l, r);
+  const rem = num(l.remise) ? nstr(Math.round(num(l.remise) * 1000) / 10) : "";
+  const absente = l.prestation && !findInCatalogue(l.prestation);
+  return `<tr data-row="lignes" data-id="${l.id}">
+      <td><div class="presta"><span class="drag" title="Glisser pour déplacer la ligne" aria-label="Déplacer">⠿</span>
+        <input class="cell" id="l-${l.id}-p" data-f="prestation" list="dl-presta" value="${esc(l.prestation)}" placeholder="Prestation…"></div>${al ? `<span class="alert">⚠ ${esc(al)}</span>` : ""}${absente ? `<span class="alert">⚠ Prestation absente du catalogue : ajoutez-la au catalogue pour fixer société et prix.</span>` : ""}</td>
       <td class="lbl locked" title="Défini par le catalogue">${l.societe ? `<i class="dot" style="background:${socColor(l.societe)}"></i>${esc(l.societe)}` : "—"}</td>
       <td style="width:96px"><select class="cell" id="l-${l.id}-u" data-f="unite">${opts(S.cfg.unites, l.unite)}</select></td>
       <td style="width:70px"><input class="cell n" id="l-${l.id}-q" data-f="quantite" data-num="1" inputmode="decimal" value="${nstr(l.quantite)}"></td>
@@ -62,9 +71,29 @@ function lignes(p, r) {
       <td class="calc" data-calc="lt-${l.id}">${lineTotalCell(l)}</td>
       <td><textarea class="cell" id="l-${l.id}-nt" data-f="notes" rows="1">${esc(l.notes)}</textarea></td>
       <td><button class="icon-btn" data-del="lignes" aria-label="Supprimer la ligne">×</button></td></tr>`;
+}
+
+function lignes(p, r) {
+  const names = sortedCatalogue().map(c => c.prestation).filter(Boolean);
+  const COLS = 9;
+  let h = `<datalist id="dl-presta">${names.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
+  <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Lignes regroupées par catégorie. Glissez ⠿ pour changer l'ordre d'une ligne ou d'une catégorie. Société et prix HT viennent du catalogue.</span></div>
+  <div class="tbl-wrap"><table data-tbl="lignes"><thead><tr>
+    <th style="min-width:270px">Prestation</th><th style="min-width:150px">Société</th>
+    <th>Unité</th><th class="num">Qté</th><th class="num">PU HT</th><th class="num" title="Remise en % sur la ligne">Remise</th>
+    <th class="num">Total HT</th><th style="min-width:200px">Notes</th><th></th></tr></thead>`;
+  const groups = groupLines(p.lignes);
+  for (const g of groups) {
+    const titre = g.cat || "Sans catégorie";
+    h += `<tbody class="cat-group" data-cat="${esc(g.cat)}">
+      <tr class="grp"><td colspan="6"><div class="grp-in"><span class="drag grp-drag" title="Glisser pour déplacer la catégorie" aria-label="Déplacer la catégorie">⠿</span>
+        <b>${esc(titre)}</b><span class="grp-n">${g.lines.length}</span></div></td>
+        <td class="calc grp-total" data-calc="${groupKey(g.cat)}">${eur(groupTotal(g))}</td><td colspan="2"></td></tr>
+      ${g.lines.map(l => ligne(l, r)).join("")}
+    </tbody>`;
   }
-  if (!(p.lignes || []).length) h += `<tr><td colspan="10" class="lbl note">Aucune ligne. Ajoutez une prestation pour commencer le devis.</td></tr>`;
-  return h + `</tbody></table></div>
+  if (!groups.length) h += `<tbody><tr><td colspan="${COLS}" class="lbl note">Aucune ligne. Ajoutez une prestation pour commencer le devis.</td></tr></tbody>`;
+  return h + `</table></div>
   <div class="add-row"><button class="btn" data-add="lignes">+ Ajouter une prestation</button></div>
   <div class="totals">
     <div class="k">Total HT</div><div class="v big" data-calc="ht">${eur(r.ht)}</div>

@@ -6,7 +6,7 @@ import { S, P, initStore, touch, newProject, deleteProject, sortedIds, savePrefs
 import { TABS, BLANK } from "./defaults.js";
 import { calc, costTotal } from "./calc.js";
 import { esc, eur, num, nstr, uid } from "./utils.js";
-import { renderDevis, lineTotalCell } from "./views/devis.js";
+import { renderDevis, lineTotalCell, groupLines, groupKey, groupTotal } from "./views/devis.js";
 import { renderCouts } from "./views/couts.js";
 import { renderResultat } from "./views/resultat.js";
 import { renderCatalogue, findInCatalogue } from "./views/catalogue.js";
@@ -15,6 +15,7 @@ import { renderLogin, renderNoAccess } from "./views/auth.js";
 import { recapSoc, recapCat } from "./views/recap.js";
 import { enhanceTables, initResize } from "./ui/resize.js";
 import { autosizeAll, initAutosize } from "./ui/autosize.js";
+import { initSortable } from "./ui/sortable.js";
 import { exportCsv } from "./export.js";
 
 const $ = id => document.getElementById(id);
@@ -79,6 +80,18 @@ function render() {
   m.innerHTML = h;
   enhanceTables(m);
   autosizeAll(m);
+  if (S.tab === "devis" && P() && !S.readOnly) initSortable(m, reorderLines);
+}
+
+/** Nouvel ordre des lignes après un glisser-déposer. */
+function reorderLines(ids) {
+  const p = P(); if (!p) return;
+  const pos = new Map(ids.map((id, i) => [id, i]));
+  const before = (p.lignes || []).map(l => l.id).join();
+  p.lignes = (p.lignes || []).slice().sort((a, b) => (pos.get(a.id) ?? 1e9) - (pos.get(b.id) ?? 1e9));
+  if (p.lignes.map(l => l.id).join() === before) return;
+  touch(S.currentId);
+  render();
 }
 
 /** Ne pas reconstruire la page pendant une saisie : on attend que le champ perde le focus. */
@@ -99,6 +112,7 @@ function refreshCalc() {
   const set = (k, v) => { const el = document.querySelector(`[data-calc="${k}"]`); if (el) el.innerHTML = v; };
   for (const l of p.lignes || []) set("lt-" + l.id, lineTotalCell(l));
   for (const c of p.couts || []) set("ct-" + c.id, eur(costTotal(c)));
+  for (const g of groupLines(p.lignes)) set(groupKey(g.cat), eur(groupTotal(g)));
   set("ht", eur(r.ht)); set("tva", eur(r.tva)); set("ttc", eur(r.ttc));
   set("jeq", nstr(r.joursEquipe)); set("jall", nstr(r.joursTous));
   set("ctot", eur(r.coutsTotal));
