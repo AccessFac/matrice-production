@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Matrice Production</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Barre du haut : projet, actions, statut d'enregistrement, onglets -->
+  <div class="topbar">
+    <div class="topbar-in">
+      <div class="row1">
+        <div class="brand">Matrice <span>Production</span></div>
+        <div class="proj"><select id="projSel" aria-label="Projet"></select></div>
+        <div class="actions" id="projActions"></div>
+        <div class="status" id="status" data-s="idle"><i></i><span>Connexion…</span></div>
+      </div>
+      <nav class="tabs" role="tablist" id="tabs"></nav>
+    </div>
+  </div>
+
+  <!-- Contenu de l'onglet actif (généré par js/views/*.js) -->
+  <div class="wrap"><main id="main"></main></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Données réelles : ne jamais les pousser sur GitHub
+supabase/seed.sql
+*.xlsx
+.DS_Store
