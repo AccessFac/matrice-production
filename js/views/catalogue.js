@@ -1,9 +1,9 @@
 /**
  * Onglet Catalogue : prestations types et tarifs par défaut, communs à tous les projets.
  * Affichage : Société → Catégorie → Prestations.
- * - l'ordre des catégories se règle par glisser-déposer, société par société (cfg.catOrder) ;
- * - glisser une prestation dans un autre groupe change sa catégorie et sa société ;
- * - les prestations restent classées par ordre alphabétique dans leur catégorie.
+ * - tout est classé par ordre alphabétique ;
+ * - sociétés et catégories se replient d'un clic sur leur titre (mémorisé dans le navigateur) ;
+ * - glisser une prestation (poignée ⠿) dans un autre groupe change sa catégorie et sa société.
  */
 import { S } from "../store.js";
 import { esc, nstr, opts } from "../utils.js";
@@ -18,20 +18,28 @@ export function findInCatalogue(name) {
   return k ? S.cfg.catalogue.find(c => String(c.prestation || "").trim().toLowerCase() === k) : null;
 }
 
-/** Position d'une catégorie dans l'ordre choisi pour une société (les autres viennent après, par ordre alphabétique). */
-function catRank(soc, cat) {
-  const order = (S.cfg.catOrder && S.cfg.catOrder[soc]) || [];
-  const i = order.indexOf(cat);
-  return i < 0 ? 1e6 : i;
+/* ---------- Repli des sociétés / catégories (préférence propre à chaque navigateur) ---------- */
+const KEY = "mp.cat.collapsed";
+function loadCollapsed() { try { return new Set(JSON.parse(localStorage.getItem(KEY)) || []); } catch (e) { return new Set(); } }
+let collapsed = loadCollapsed();
+function saveCollapsed() { try { localStorage.setItem(KEY, JSON.stringify([...collapsed])); } catch (e) {} }
+const gKey = (soc, cat) => `${soc}|${cat ?? ""}`;   // catégorie : "soc|cat" ; société entière : "soc|*"
+export const socKey = soc => `${soc}|*`;
+export function isCollapsed(k) { return collapsed.has(k); }
+export function setCollapsed(k, on) { on ? collapsed.add(k) : collapsed.delete(k); saveCollapsed(); }
+export function setAllCollapsed(on) {
+  collapsed = new Set();
+  if (on) for (const c of S.cfg.catalogue) if (c.societe) collapsed.add(gKey(c.societe, c.categorie || ""));
+  saveCollapsed();
 }
+export const catKey = gKey;
 
-/** Catalogue trié : société (alphabétique), catégorie (ordre choisi), prestation (alphabétique). Lignes vides en bas. */
+/** Catalogue trié par ordre alphabétique : société, catégorie, prestation. Lignes vides en bas. */
 export function sortedCatalogue(cat = S.cfg.catalogue) {
   const empty = c => !c.societe && !c.prestation;
   return cat.slice().sort((a, b) =>
     (empty(a) - empty(b)) || (!a.societe - !b.societe) || cmp(a.societe, b.societe)
-    || (!a.categorie - !b.categorie) || (catRank(a.societe, a.categorie) - catRank(b.societe, b.categorie))
-    || cmp(a.categorie, b.categorie) || cmp(a.prestation, b.prestation));
+    || (!a.categorie - !b.categorie) || cmp(a.categorie, b.categorie) || cmp(a.prestation, b.prestation));
 }
 
 function row(c) {
@@ -50,8 +58,9 @@ function row(c) {
 
 export function renderCatalogue() {
   const cat = S.cfg.catalogue;
-  let h = `<section class="sec"><div class="sec-h"><h2>Catalogue des prestations <small>${cat.length} prestations</small></h2></div>
-  <p class="note">Classé par société, puis catégorie, puis prestation. Glissez ⠿ un titre de catégorie pour changer l'ordre des catégories ; glissez ⠿ une prestation dans un autre groupe pour changer sa catégorie ou sa société. Tarifs par défaut : les modifier ne change pas les devis déjà faits. « Planning » : la prestation mobilise une personne sur les phases d'équipe.</p>
+  let h = `<section class="sec"><div class="sec-h"><h2>Catalogue des prestations <small>${cat.length} prestations</small></h2>
+    <div class="actions"><button class="btn ghost" data-foldall="1">Tout replier</button><button class="btn ghost" data-foldall="0">Tout déplier</button></div></div>
+  <p class="note">Classé par ordre alphabétique : société, catégorie, prestation. Cliquez sur le titre d'une société ou d'une catégorie pour la replier ou la déplier. Glissez ⠿ une prestation dans un autre groupe pour changer sa catégorie ou sa société. Tarifs par défaut : les modifier ne change pas les devis déjà faits. « Planning » : la prestation mobilise une personne sur les phases d'équipe.</p>
   <div class="tbl-wrap"><table data-tbl="catalogue"><thead><tr>
     <th style="min-width:300px">Prestation</th><th style="min-width:380px">Description</th>
     <th>Unité</th><th class="num">PU HT</th><th>Planning</th><th></th></tr></thead>`;
@@ -71,17 +80,20 @@ export function renderCatalogue() {
     const titre = s.soc || "Nouvelles lignes (choisir société et catégorie)";
     const n = s.cats.reduce((a, g) => a + g.items.length, 0);
     const absentes = S.cfg.categories.filter(x => !s.cats.some(g => g.cat === x));
+    const socClosed = s.soc && isCollapsed(socKey(s.soc));
     h += `<tbody class="soc-head" data-soc="${esc(s.soc)}"><tr class="grp"><td colspan="${COLS}"><div class="grp-in">
-        <i class="dot" style="background:${socColor(s.soc)}"></i><b>${esc(titre)}</b><span class="grp-n">${n}</span>
+        ${s.soc ? `<button class="fold" data-fold="${esc(socKey(s.soc))}" aria-expanded="${!socClosed}" aria-label="Replier ou déplier ${esc(s.soc)}"><span class="chev">${socClosed ? "▸" : "▾"}</span>` : ""}
+        <i class="dot" style="background:${socColor(s.soc)}"></i><b>${esc(titre)}</b><span class="grp-n">${n}</span>${s.soc ? "</button>" : ""}
         ${s.soc && absentes.length ? `<select class="cell add-cat" data-soc="${esc(s.soc)}" aria-label="Ajouter une catégorie à ${esc(s.soc)}"><option value="">+ Catégorie…</option>${absentes.map(x => `<option>${esc(x)}</option>`).join("")}</select>` : ""}
       </div></td></tr></tbody>`;
     for (const g of s.cats) {
+      const k = catKey(s.soc, g.cat), closed = isCollapsed(k);
       const sub = s.soc ? `<tr class="subgrp"><td colspan="${COLS}"><div class="grp-in">
-          ${g.cat ? `<span class="drag cat-drag" title="Glisser pour ranger la catégorie" aria-label="Déplacer la catégorie">⠿</span>` : ""}
-          <b>${esc(g.cat || "Sans catégorie")}</b><span class="grp-n">${g.items.length}</span>
+          <button class="fold" data-fold="${esc(k)}" aria-expanded="${!closed}" aria-label="Replier ou déplier ${esc(g.cat || "Sans catégorie")}"><span class="chev">${closed ? "▸" : "▾"}</span>
+          <b>${esc(g.cat || "Sans catégorie")}</b><span class="grp-n">${g.items.length}</span></button>
           ${g.cat ? `<button class="btn ghost add-in" data-addin="${esc(s.soc)}|${esc(g.cat)}" title="Ajouter une prestation dans ${esc(g.cat)}">+ Prestation</button>` : ""}
         </div></td></tr>` : "";
-      h += `<tbody class="cat-group" data-soc="${esc(s.soc)}" data-cat="${esc(g.cat)}">${sub}${g.items.map(row).join("")}</tbody>`;
+      h += `<tbody class="cat-group${closed ? " collapsed" : ""}${socClosed ? " soc-collapsed" : ""}" data-soc="${esc(s.soc)}" data-cat="${esc(g.cat)}" data-fold-key="${esc(k)}">${sub}${g.items.map(row).join("")}</tbody>`;
     }
   }
   if (!cat.length) h += `<tbody><tr><td colspan="${COLS}" class="lbl note">Le catalogue est vide. Ajoutez vos prestations types avec leur tarif.</td></tr></tbody>`;

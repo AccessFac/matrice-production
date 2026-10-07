@@ -9,7 +9,7 @@ import { esc, eur, num, nstr, uid } from "./utils.js";
 import { renderDevis, lineTotalCell, groupLines, groupKey, groupTotal } from "./views/devis.js";
 import { renderCouts } from "./views/couts.js";
 import { renderResultat } from "./views/resultat.js";
-import { renderCatalogue, findInCatalogue } from "./views/catalogue.js";
+import { renderCatalogue, findInCatalogue, setCollapsed, isCollapsed, setAllCollapsed, socKey, catKey } from "./views/catalogue.js";
 import { renderListes } from "./views/listes.js";
 import { renderLogin, renderNoAccess } from "./views/auth.js";
 import { recapSoc, recapCat } from "./views/recap.js";
@@ -81,13 +81,7 @@ function render() {
   enhanceTables(m);
   autosizeAll(m);
   if (S.tab === "devis" && P() && !S.readOnly) initSortable(m, reorderLines);
-  if (S.tab === "catalogue" && !S.readOnly) initCatalogueSortable(m, { onCatOrder: setCatOrder, onMoveRow: moveCatalogueRow });
-}
-
-/** Catalogue : nouvel ordre des catégories d'une société. */
-function setCatOrder(soc, cats) {
-  S.cfg.catOrder = { ...(S.cfg.catOrder || {}), [soc]: cats };
-  touch("cfg"); render();
+  if (S.tab === "catalogue" && !S.readOnly) initCatalogueSortable(m, { onMoveRow: moveCatalogueRow });
 }
 
 /** Catalogue : prestation déposée dans un autre groupe → nouvelle société / catégorie. */
@@ -103,10 +97,7 @@ function moveCatalogueRow(id, soc, cat) {
 function addCatalogueRow(soc, cat) {
   const row = { id: uid(), ...BLANK.catalogue(), societe: soc || "", categorie: cat || "" };
   S.cfg.catalogue.push(row);
-  if (soc && cat) {
-    const order = (S.cfg.catOrder && S.cfg.catOrder[soc]) || [];
-    if (!order.includes(cat)) S.cfg.catOrder = { ...(S.cfg.catOrder || {}), [soc]: [...order, cat] };
-  }
+  if (soc) { setCollapsed(socKey(soc), false); setCollapsed(catKey(soc, cat || ""), false); }   // montrer la nouvelle ligne
   touch("cfg"); render();
   const f = $(`k-${row.id}-p`); if (f) f.focus();
 }
@@ -163,6 +154,16 @@ document.addEventListener("click", e => {
   if (act === "logout") { const a = getAdapter(); if (a && a.signOut) a.signOut(); return; }
   if (S.readOnly) return;
 
+  if (t.dataset.fold) {                                   // replier / déplier sans tout redessiner
+    const k = t.dataset.fold, on = !isCollapsed(k);
+    setCollapsed(k, on);
+    t.setAttribute("aria-expanded", String(!on));
+    const chev = t.querySelector(".chev"); if (chev) chev.textContent = on ? "▸" : "▾";
+    if (k.endsWith("|*")) document.querySelectorAll(`tbody.cat-group`).forEach(tb => { if (socKey(tb.dataset.soc) === k) tb.classList.toggle("soc-collapsed", on); });
+    else document.querySelectorAll(`tbody.cat-group`).forEach(tb => { if (tb.dataset.foldKey === k) tb.classList.toggle("collapsed", on); });
+    return;
+  }
+  if (t.dataset.foldall) { setAllCollapsed(t.dataset.foldall === "1"); render(); return; }
   if (t.dataset.addin) { const [soc, cat] = t.dataset.addin.split("|"); addCatalogueRow(soc, cat); return; }
   if (t.dataset.add) {
     const k = t.dataset.add;

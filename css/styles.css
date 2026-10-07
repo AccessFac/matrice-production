@@ -326,3 +326,10 @@ tbody.cat-group tr.subgrp td{padding:8px 8px 6px 14px}
   table[data-tbl] tbody.cat-group tr.subgrp td{display:block;background:none;border:0;padding:8px 0 6px 6px}
   .picks{padding-left:0;flex-wrap:wrap}
 }
+
+/* Catalogue : repli des sociétés / catégories */
+.fold{display:inline-flex;align-items:center;gap:8px;border:0;background:none;padding:2px 4px 2px 0;cursor:pointer;color:inherit;font:inherit;text-align:left}
+.fold:hover b{text-decoration:underline;text-underline-offset:3px}
+.chev{display:inline-block;width:14px;color:var(--muted);font-size:12px}
+tbody.cat-group.collapsed tr[data-row]{display:none}
+tbody.cat-group.soc-collapsed{display:none}
