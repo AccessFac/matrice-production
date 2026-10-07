@@ -102,3 +102,30 @@ export function syncFromCatalogue(p, catalogue) {
   }
   return changed;
 }
+
+/** Aligne les lignes de coûts d'un projet sur le catalogue des coûts (même principe que les prestations). */
+export function syncCostsFromBase(p, base) {
+  if (!p || !Array.isArray(p.couts)) return false;
+  const byId = new Map((base || []).map(c => [c.id, c]));
+  const byName = new Map((base || []).filter(c => c.libelle).map(c => [String(c.libelle).trim().toLowerCase(), c]));
+  let changed = false;
+  for (const l of p.couts) {
+    const item = (l.costId && byId.get(l.costId)) || byName.get(String(l.libelle || "").trim().toLowerCase());
+    if (!item) continue;
+    const next = { costId: item.id, libelle: item.libelle, societe: item.societe || "", nature: item.nature || "",
+                   coutUnitaire: item.cout ?? null, interne: !!item.interne, factureePar: item.interne ? (item.factureePar || "") : "" };
+    for (const [k, v] of Object.entries(next)) if (l[k] !== v) { l[k] = v; changed = true; }
+  }
+  return changed;
+}
+
+/** Regroupe des lignes par un champ (catégorie, nature) dans l'ordre d'apparition ; les lignes sans valeur restent en bas. */
+export function groupBy(lines, field) {
+  const groups = [], byKey = new Map();
+  for (const l of lines || []) {
+    const k = l[field] || "";
+    if (!byKey.has(k)) { const g = { cat: k, lines: [] }; byKey.set(k, g); groups.push(g); }
+    byKey.get(k).lines.push(l);
+  }
+  return groups.sort((a, b) => (!a.cat) - (!b.cat));
+}

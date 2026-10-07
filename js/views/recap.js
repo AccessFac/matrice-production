@@ -34,3 +34,10 @@ export function recapCat(r) {
   return cats.map(([c, v]) => barRow(c, v, r.ht, "var(--accent)")).join("")
     + `<div class="recap-foot"><span>Total</span><span class="amt">${eur(r.ht)}</span></div>`;
 }
+
+/** Légende carré de couleur → société (sociétés de la liste, plus celles présentes dans les lignes). */
+export function socLegend(extra = []) {
+  const names = S.cfg.societes.slice();
+  for (const x of extra) if (x && !names.includes(x)) names.push(x);
+  return `<div class="legend" aria-label="Légende des sociétés">${names.map(n => `<span><i class="dot" style="background:${socColor(n)}"></i>${esc(n)}</span>`).join("")}</div>`;
+}

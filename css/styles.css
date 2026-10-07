@@ -333,3 +333,27 @@ tbody.cat-group tr.subgrp td{padding:8px 8px 6px 14px}
 .chev{display:inline-block;width:14px;color:var(--muted);font-size:12px}
 tbody.cat-group.collapsed tr[data-row]{display:none}
 tbody.cat-group.soc-collapsed{display:none}
+
+/* Devis / Coûts : société en carré de couleur (1re colonne) et légende */
+th.soc-th, td.soc-cell { width: 26px; padding-left: 10px; padding-right: 0; }
+td.soc-cell { padding-top: 12px; }
+td.soc-cell .dot { width: 12px; height: 12px; border-radius: 3px; }
+.dot-empty { background: none; border: 1.5px dashed var(--line-strong); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .dot { width: 11px; height: 11px; border-radius: 3px; }
+.tag-int { display: inline-block; margin: 2px 0 0 28px; font-size: 11.5px; color: var(--accent); }
+
+/* Catalogues : toute la ligne de titre est cliquable */
+tr.foldable { cursor: pointer; }
+tr.foldable:hover td { background: var(--surface-2) !important; }
+tr.foldable:hover b { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 720px) {
+  /* le carré de société se place en haut à gauche de la fiche */
+  table[data-tbl] tbody tr[data-row] td.soc-cell { position: absolute; top: 14px; left: 12px; width: auto; padding: 0 !important; }
+  table[data-tbl] tbody tr[data-row] td.presta-cell { grid-column: 1 / -1; padding-left: 20px !important; }
+  table[data-tbl] tbody tr[data-row] td.presta-cell .cell { font-weight: 600; }
+  table[data-tbl] tbody tr[data-row] td:first-child:not(.soc-cell) { grid-column: 1 / -1; }
+  .tag-int { margin-left: 0; }
+}

@@ -1,8 +1,8 @@
 /** Onglet Devis : infos projet, planning, lignes de prestations, totaux et récaps. */
 import { S, P } from "../store.js";
-import { calc, lineTotal, lineGross, dayAlert } from "../calc.js";
+import { calc, lineTotal, lineGross, dayAlert, groupBy } from "../calc.js";
 import { esc, eur, num, nstr, opts } from "../utils.js";
-import { recapSoc, recapCat, socColor } from "./recap.js";
+import { recapSoc, recapCat, socColor, socLegend } from "./recap.js";
 import { sortedCatalogue, findInCatalogue } from "./catalogue.js";
 
 /** Contenu de la cellule « Total HT » d'une ligne (avec le montant avant remise s'il y en a une). */
@@ -40,18 +40,8 @@ function planning(p, r) {
   </section>`;
 }
 
-/** Lignes regroupées par catégorie, dans l'ordre du tableau p.lignes (ordre de première apparition). */
-export function groupLines(lines) {
-  const groups = [];
-  const byCat = new Map();
-  for (const l of lines || []) {
-    const cat = l.categorie || "";
-    if (!byCat.has(cat)) { const g = { cat, lines: [] }; byCat.set(cat, g); groups.push(g); }
-    byCat.get(cat).lines.push(l);
-  }
-  // les lignes sans catégorie (pas encore choisies) restent toujours en bas
-  return groups.sort((a, b) => (!a.cat) - (!b.cat));
-}
+/** Lignes regroupées par catégorie, dans l'ordre du tableau p.lignes. */
+export const groupLines = lines => groupBy(lines, "categorie");
 
 export const groupKey = cat => "gt-" + encodeURIComponent(cat || "_");
 export function groupTotal(g) { return g.lines.reduce((a, l) => a + (lineTotal(l) || 0), 0); }
@@ -61,9 +51,9 @@ function ligne(l, r) {
   const rem = num(l.remise) ? nstr(Math.round(num(l.remise) * 1000) / 10) : "";
   const absente = l.prestation && !findInCatalogue(l.prestation);
   return `<tr data-row="lignes" data-id="${l.id}">
-      <td><div class="presta"><span class="drag" title="Glisser pour déplacer la ligne" aria-label="Déplacer">⠿</span>
+      <td class="soc-cell" title="${esc(l.societe || "Société non définie")}">${l.societe ? `<i class="dot" style="background:${socColor(l.societe)}" aria-label="${esc(l.societe)}"></i>` : `<i class="dot dot-empty"></i>`}</td>
+      <td class="presta-cell"><div class="presta"><span class="drag" title="Glisser pour déplacer la ligne" aria-label="Déplacer">⠿</span>
         <input class="cell" id="l-${l.id}-p" data-f="prestation" list="dl-presta" value="${esc(l.prestation)}" placeholder="Prestation…"></div>${al ? `<span class="alert">⚠ ${esc(al)}</span>` : ""}${absente ? `<span class="alert">⚠ Prestation absente du catalogue : ajoutez-la au catalogue pour fixer société et prix.</span>` : ""}</td>
-      <td class="lbl locked" title="Défini par le catalogue">${l.societe ? `<i class="dot" style="background:${socColor(l.societe)}"></i>${esc(l.societe)}` : "—"}</td>
       <td style="width:96px"><select class="cell" id="l-${l.id}-u" data-f="unite">${opts(S.cfg.unites, l.unite)}</select></td>
       <td style="width:70px"><input class="cell n" id="l-${l.id}-q" data-f="quantite" data-num="1" inputmode="decimal" value="${nstr(l.quantite)}"></td>
       <td class="calc locked" style="width:100px" title="Défini par le catalogue">${l.pu === null || l.pu === undefined || l.pu === "" ? "—" : eur(num(l.pu))}</td>
@@ -78,8 +68,9 @@ function lignes(p, r) {
   const COLS = 9;
   let h = `<datalist id="dl-presta">${names.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
   <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Lignes regroupées par catégorie. Glissez ⠿ pour changer l'ordre d'une ligne ou d'une catégorie. Société et prix HT viennent du catalogue et se mettent à jour quand il change.</span></div>
+  ${socLegend((p.lignes || []).map(l => l.societe))}
   <div class="tbl-wrap"><table data-tbl="lignes"><thead><tr>
-    <th style="min-width:270px">Prestation</th><th style="min-width:150px">Société</th>
+    <th class="soc-th" title="Société"></th><th style="min-width:270px">Prestation</th>
     <th>Unité</th><th class="num">Qté</th><th class="num">PU HT</th><th class="num" title="Remise en % sur la ligne">Remise</th>
     <th class="num">Total HT</th><th style="min-width:200px">Notes</th><th></th></tr></thead>`;
   const groups = groupLines(p.lignes);

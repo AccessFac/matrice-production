@@ -4,9 +4,9 @@
  * - une ligne se déplace à l'intérieur de sa catégorie par sa poignée ⠿.
  * Après chaque dépôt, onReorder(ids) reçoit les identifiants des lignes dans le nouvel ordre.
  */
-export function initSortable(root, onReorder) {
+export function initSortable(root, onReorder, tbl = "lignes") {
   const Sortable = window.Sortable;
-  const table = root.querySelector('table[data-tbl="lignes"]');
+  const table = root.querySelector(`table[data-tbl="${tbl}"]`);
   if (!Sortable || !table) return;
   const done = () => onReorder([...table.querySelectorAll("tbody.cat-group tr[data-row]")].map(tr => tr.dataset.id));
   const common = { animation: 150, ghostClass: "drag-ghost", chosenClass: "drag-chosen", forceFallback: false, onEnd: done };
@@ -20,16 +20,16 @@ export function initSortable(root, onReorder) {
  * Glisser-déposer du catalogue : une prestation déposée dans un autre groupe
  * → onMoveRow(id, société, catégorie). Le classement reste alphabétique.
  */
-export function initCatalogueSortable(root, { onMoveRow }) {
+export function initCatalogueSortable(root, { onMoveRow }, kind = "catalogue") {
   const Sortable = window.Sortable;
-  const table = root.querySelector('table[data-tbl="catalogue"]');
+  const table = root.querySelector(`table[data-tbl="${kind}"]`);
   if (!Sortable || !table) return;
   const common = { animation: 150, ghostClass: "drag-ghost", chosenClass: "drag-chosen" };
 
   table.querySelectorAll("tbody.cat-group").forEach(tb => {
     new Sortable(tb, {
       ...common, draggable: "tr[data-row]", handle: ".drag",
-      group: { name: "cat-rows", pull: true, put: to => !!(to.el.dataset.soc && to.el.dataset.cat) },
+      group: { name: "cat-rows-" + kind, pull: true, put: to => !!(to.el.dataset.soc && to.el.dataset.cat) },
       onEnd: evt => {
         if (evt.to === evt.from) { onMoveRow(null); return; }   // même groupe : l'ordre reste alphabétique
         onMoveRow(evt.item.dataset.id, evt.to.dataset.soc, evt.to.dataset.cat);

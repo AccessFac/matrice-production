@@ -6,7 +6,8 @@ export const DEFAULT_CFG = {
   categories: [],
   natures: ["Salaire chargé", "Facture prestataire", "Location", "Transport", "Défraiements / repas", "Refacturation interne", "Achat / consommable", "Autre"],
   phases: [],
-  catalogue: []
+  catalogue: [],
+  coutsCatalogue: []
 };
 
 /** Onglets de l'application. internal: true → marqué « interne ». */
@@ -15,6 +16,7 @@ export const TABS = [
   { id: "couts", label: "Coûts", internal: true },
   { id: "resultat", label: "Résultat", internal: true },
   { id: "catalogue", label: "Catalogue" },
+  { id: "coutsbase", label: "Catalogue coûts", internal: true },
   { id: "listes", label: "Listes" }
 ];
 
@@ -30,7 +32,7 @@ export const SOC_COLORS = ["var(--soc4)", "var(--soc5)", "var(--soc6)"];
 /** Modèles de lignes vides ajoutées par les boutons « + Ajouter ». */
 export const BLANK = {
   lignes: () => ({ prestation: "", categorie: "", description: "", societe: "", unite: "", quantite: null, pu: null, remise: null, notes: "", presence: false }),
-  couts: () => ({ societe: "", nature: "Salaire chargé", libelle: "", ligneLiee: "", quantite: null, coutUnitaire: null, interne: false, factureePar: "", commentaire: "" }),
+  couts: () => ({ costId: null, libelle: "", nature: "", societe: "", unite: "", quantite: null, coutUnitaire: null, interne: false, factureePar: "", notes: "" }),
   planning: () => ({ phase: "", equipe: false, jours: null, remarques: "" }),
   catalogue: () => ({ prestation: "", categorie: "", description: "", societe: "", unite: "Jour", pu: null, presence: false })
 };
