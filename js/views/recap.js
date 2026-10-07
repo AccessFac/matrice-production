@@ -1,10 +1,13 @@
 /** Récapitulatifs à barres (CA par société, CA par catégorie) affichés sous le devis. */
 import { S } from "../store.js";
-import { SOC_COLORS } from "../defaults.js";
+import { SOC_COLORS, SOC_COLOR_BY_NAME } from "../defaults.js";
 import { esc, eur, pct } from "../utils.js";
 
 export function socColor(s) {
-  const i = S.cfg.societes.indexOf(s);
+  const key = String(s || "").toLowerCase().replace(/\s+/g, "");
+  if (SOC_COLOR_BY_NAME[key]) return SOC_COLOR_BY_NAME[key];
+  const others = S.cfg.societes.filter(x => !SOC_COLOR_BY_NAME[String(x).toLowerCase().replace(/\s+/g, "")]);
+  const i = others.indexOf(s);
   return i < 0 ? "var(--faint)" : SOC_COLORS[i % SOC_COLORS.length];
 }
 

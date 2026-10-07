@@ -18,8 +18,14 @@ export const TABS = [
   { id: "listes", label: "Listes" }
 ];
 
-/** Couleur de chaque société, dans l'ordre de la liste « Sociétés ». */
-export const SOC_COLORS = ["var(--soc1)", "var(--soc2)", "var(--soc3)", "var(--soc4)", "var(--soc5)"];
+/** Couleurs fixes par société (variables dans css/styles.css). La clé est le nom en minuscules, sans espaces. */
+export const SOC_COLOR_BY_NAME = {
+  playbacksolutions: "var(--c-playback)",
+  accessfactory: "var(--c-accessfactory)",
+  accessflow: "var(--c-accessflow)"
+};
+/** Couleurs de secours pour les autres sociétés, dans l'ordre de la liste « Sociétés ». */
+export const SOC_COLORS = ["var(--soc4)", "var(--soc5)", "var(--soc6)"];
 
 /** Modèles de lignes vides ajoutées par les boutons « + Ajouter ». */
 export const BLANK = {
