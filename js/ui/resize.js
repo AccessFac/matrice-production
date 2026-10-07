@@ -12,6 +12,11 @@ function setW(th, w) { th.style.width = th.style.minWidth = th.style.maxWidth = 
 export function enhanceTables(root) {
   root.querySelectorAll("table[data-tbl]").forEach(t => {
     const cells = t.tHead ? Array.from(t.tHead.rows[0].cells) : [];
+    // Étiquette de colonne sur chaque cellule : sur téléphone, les lignes s'affichent en fiches
+    const labels = cells.map(th => (th.textContent || "").trim());
+    t.querySelectorAll("tbody tr[data-row]").forEach(tr => {
+      Array.from(tr.cells).forEach((td, i) => { if (labels[i]) td.dataset.label = labels[i]; });
+    });
     cells.forEach((th, i) => {
       if (i === cells.length - 1 && !th.textContent.trim()) return; // colonne du bouton supprimer
       const h = document.createElement("span");

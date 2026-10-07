@@ -171,3 +171,78 @@ tfoot td{padding:8px;font-weight:600;background:var(--surface-2);border-top:1px 
 
 /* Écran de connexion toujours utilisable ; 16px évite le zoom automatique sur iPhone */
 .auth input{pointer-events:auto;font-size:16px}
+
+/* =========================================================================
+   Téléphone (≤ 720 px) : barre du haut compacte, lignes de tableau en fiches
+   ========================================================================= */
+@media (max-width: 720px) {
+  .topbar-in { padding-block: 10px 0; gap: 8px; }
+  .row1 { gap: 8px; }
+  .brand { font-size: 13px; order: 1; }
+  .status { order: 2; margin-left: auto; font-size: 11px; }
+  .proj { order: 3; flex: 1 1 100%; }
+  .proj select { max-width: none; font-size: 16px; }
+  .actions { order: 4; flex: 1 1 100%; gap: 6px; }
+  .actions .btn { padding: 6px 9px; font-size: 12.5px; }
+  .actions .who { display: none; }
+  .tab { padding: 8px 10px 9px; }
+  main { gap: 18px; padding-top: 14px; }
+  h2 { font-size: 16px; }
+  h2 small { display: block; margin: 2px 0 0; }
+
+  /* Saisie : 16 px pour éviter le zoom de l'iPhone */
+  input, select, textarea, .cell, .field input { font-size: 16px; }
+
+  /* Tableaux → fiches */
+  .tbl-wrap { border: 0; background: none; overflow: visible; }
+  table[data-tbl] { display: block; width: 100% !important; min-width: 0; }
+  table[data-tbl] thead { display: none; }
+  table[data-tbl] tbody, table[data-tbl] tfoot { display: block; }
+  table[data-tbl] tbody tr[data-row] {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px;
+    position: relative; background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 12px 40px 12px 12px; margin-bottom: 10px;
+  }
+  table[data-tbl] tbody tr[data-row]:hover td { background: none; }
+  table[data-tbl] td {
+    display: block; border: 0; padding: 0;
+    width: auto !important; min-width: 0 !important; max-width: none !important;
+  }
+  table[data-tbl] td[data-label]::before {
+    content: attr(data-label); display: block; margin-bottom: 3px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+  }
+  /* Première colonne (prestation, phase, libellé…) et textes longs : pleine largeur */
+  table[data-tbl] td:first-child,
+  table[data-tbl] td:has(textarea) { grid-column: 1 / -1; }
+  table[data-tbl] td:first-child .cell { font-weight: 600; }
+  table[data-tbl="planning"] td:nth-child(4),
+  table[data-tbl="couts"] td:nth-child(3),
+  table[data-tbl="couts"] td:nth-child(4),
+  table[data-tbl="couts"] td:nth-child(10) { grid-column: 1 / -1; }
+  /* Champs bien visibles au toucher */
+  table[data-tbl] .cell { border-color: var(--line); background: var(--input); padding: 8px 9px; }
+  table[data-tbl] td.calc { text-align: left; padding: 0; font-size: 16px; }
+  table[data-tbl] td.calc::before { font-family: var(--f-body); }
+  table[data-tbl] td[style*="text-align:center"] { text-align: left !important; padding-top: 0 !important; }
+  table[data-tbl] input[type="checkbox"] { width: 22px; height: 22px; }
+  /* Bouton supprimer en haut à droite de la fiche */
+  table[data-tbl] tbody tr[data-row] td:last-child:not([data-label]) { position: absolute; top: 6px; right: 6px; }
+  table[data-tbl] .icon-btn { font-size: 20px; padding: 6px 9px; }
+  table[data-tbl] .alert { padding: 4px 0 0; }
+  /* Lignes « aucune ligne » et pied de tableau */
+  table[data-tbl] tbody tr:not([data-row]) td { padding: 12px; background: var(--surface); border: 1px dashed var(--line-strong); border-radius: var(--r); }
+  table[data-tbl] tfoot tr { display: flex; justify-content: space-between; background: var(--surface-2); border-radius: var(--r); padding: 10px 12px; }
+  table[data-tbl] tfoot td { padding: 0; background: none; border: 0; }
+  table[data-tbl] tfoot td:empty { display: none; }
+  .rz { display: none; }
+
+  .add-row .btn { flex: 1 1 auto; padding: 10px; }
+  .totals { justify-content: stretch; grid-template-columns: 1fr auto; }
+  .fields { padding: 12px; }
+  .cards { grid-template-columns: minmax(0, 1fr); }
+  .group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .group .v { font-size: 17px; }
+  .lists { grid-template-columns: minmax(0, 1fr); }
+  .confirm { flex-wrap: wrap; }
+}
