@@ -264,3 +264,17 @@ tbody tr.grp:hover td{background:var(--bg)}
 @media (max-width:720px){
   table[data-tbl] tbody tr.grp td{display:block;background:none;border:0;border-radius:0;padding:14px 2px 6px}
 }
+
+/* Devis : valeurs issues du catalogue (non modifiables) */
+td.locked{color:var(--muted);white-space:nowrap}
+td.lbl.locked{padding:8px 8px}
+td.lbl.locked .dot{margin-right:7px;vertical-align:0}
+/* Remise : symbole % affiché dès qu'un chiffre est saisi */
+.pct-in{position:relative;display:block}
+.pct-in .cell{padding-right:22px}
+.pct-in .suf{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-family:var(--f-mono);display:none}
+.pct-in .cell:not(:placeholder-shown) + .suf{display:block}
+@media (max-width:720px){
+  table[data-tbl] td.locked{padding:0 !important;white-space:normal}
+  table[data-tbl] td.calc.locked{font-size:15px;font-weight:400}
+}

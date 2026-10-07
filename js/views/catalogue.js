@@ -5,6 +5,12 @@ import { socColor } from "./recap.js";
 
 const cmp = (a, b) => String(a || "").localeCompare(String(b || ""), "fr", { sensitivity: "base", numeric: true });
 
+/** Prestation du catalogue par son nom (sans tenir compte des majuscules ni des espaces en trop). */
+export function findInCatalogue(name) {
+  const k = String(name || "").trim().toLowerCase();
+  return k ? S.cfg.catalogue.find(c => String(c.prestation || "").trim().toLowerCase() === k) : null;
+}
+
 /** Catalogue trié par société puis par prestation ; les lignes encore vides restent en bas. */
 export function sortedCatalogue(cat = S.cfg.catalogue) {
   const empty = c => !c.societe && !c.prestation;

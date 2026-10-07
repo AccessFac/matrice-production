@@ -9,7 +9,7 @@ import { esc, eur, num, nstr, uid } from "./utils.js";
 import { renderDevis, lineTotalCell } from "./views/devis.js";
 import { renderCouts } from "./views/couts.js";
 import { renderResultat } from "./views/resultat.js";
-import { renderCatalogue } from "./views/catalogue.js";
+import { renderCatalogue, findInCatalogue } from "./views/catalogue.js";
 import { renderListes } from "./views/listes.js";
 import { renderLogin, renderNoAccess } from "./views/auth.js";
 import { recapSoc, recapCat } from "./views/recap.js";
@@ -183,7 +183,7 @@ document.addEventListener("change", e => {
   const tr = el.closest("tr[data-row]");
   // Choisir une prestation du catalogue remplit la ligne
   if (tr && tr.dataset.row === "lignes" && el.dataset.f === "prestation") {
-    const item = S.cfg.catalogue.find(c => c.prestation === el.value);
+    const item = findInCatalogue(el.value);
     const row = P().lignes.find(x => x.id === tr.dataset.id);
     if (item && row) {
       Object.assign(row, { prestation: item.prestation, categorie: item.categorie, description: item.description, societe: item.societe, unite: item.unite, pu: item.pu, presence: !!item.presence });

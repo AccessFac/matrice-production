@@ -2,8 +2,8 @@
 import { S, P } from "../store.js";
 import { calc, lineTotal, lineGross, dayAlert } from "../calc.js";
 import { esc, eur, num, nstr, opts } from "../utils.js";
-import { recapSoc, recapCat } from "./recap.js";
-import { sortedCatalogue } from "./catalogue.js";
+import { recapSoc, recapCat, socColor } from "./recap.js";
+import { sortedCatalogue, findInCatalogue } from "./catalogue.js";
 
 /** Contenu de la cellule « Total HT » d'une ligne (avec le montant avant remise s'il y en a une). */
 export function lineTotalCell(l) {
@@ -43,7 +43,7 @@ function planning(p, r) {
 function lignes(p, r) {
   const names = sortedCatalogue().map(c => c.prestation).filter(Boolean);
   let h = `<datalist id="dl-presta">${names.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
-  <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Choisissez une prestation du catalogue : catégorie, société, unité et prix se remplissent. La description reste dans le catalogue.</span></div>
+  <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Choisissez une prestation du catalogue : catégorie, société et prix HT viennent du catalogue et ne se modifient pas ici.</span></div>
   <div class="tbl-wrap"><table data-tbl="lignes"><thead><tr>
     <th style="min-width:250px">Prestation</th><th style="min-width:150px">Catégorie</th><th style="min-width:150px">Société</th>
     <th>Unité</th><th class="num">Qté</th><th class="num">PU HT</th><th class="num" title="Remise en % sur la ligne">Remise</th>
@@ -52,13 +52,13 @@ function lignes(p, r) {
     const al = dayAlert(l, r);
     const rem = num(l.remise) ? nstr(Math.round(num(l.remise) * 1000) / 10) : "";
     h += `<tr data-row="lignes" data-id="${l.id}">
-      <td><input class="cell" id="l-${l.id}-p" data-f="prestation" list="dl-presta" value="${esc(l.prestation)}" placeholder="Prestation…">${al ? `<span class="alert">⚠ ${esc(al)}</span>` : ""}</td>
-      <td><select class="cell" id="l-${l.id}-c" data-f="categorie">${opts(S.cfg.categories, l.categorie)}</select></td>
-      <td><select class="cell" id="l-${l.id}-s" data-f="societe">${opts(S.cfg.societes, l.societe)}</select></td>
+      <td><input class="cell" id="l-${l.id}-p" data-f="prestation" list="dl-presta" value="${esc(l.prestation)}" placeholder="Prestation…">${al ? `<span class="alert">⚠ ${esc(al)}</span>` : ""}${l.prestation && !findInCatalogue(l.prestation) ? `<span class="alert">⚠ Prestation absente du catalogue : ajoutez-la au catalogue pour fixer catégorie, société et prix.</span>` : ""}</td>
+      <td class="lbl locked" title="Défini par le catalogue">${esc(l.categorie) || "—"}</td>
+      <td class="lbl locked" title="Défini par le catalogue">${l.societe ? `<i class="dot" style="background:${socColor(l.societe)}"></i>${esc(l.societe)}` : "—"}</td>
       <td style="width:96px"><select class="cell" id="l-${l.id}-u" data-f="unite">${opts(S.cfg.unites, l.unite)}</select></td>
       <td style="width:70px"><input class="cell n" id="l-${l.id}-q" data-f="quantite" data-num="1" inputmode="decimal" value="${nstr(l.quantite)}"></td>
-      <td style="width:100px"><input class="cell n" id="l-${l.id}-u2" data-f="pu" data-num="1" inputmode="decimal" value="${nstr(l.pu)}"></td>
-      <td style="width:80px"><input class="cell n" id="l-${l.id}-r" data-f="remise" data-pctf="1" inputmode="decimal" value="${rem}" placeholder="—" aria-label="Remise en %"></td>
+      <td class="calc locked" style="width:100px" title="Défini par le catalogue">${l.pu === null || l.pu === undefined || l.pu === "" ? "—" : eur(num(l.pu))}</td>
+      <td style="width:88px"><span class="pct-in"><input class="cell n" id="l-${l.id}-r" data-f="remise" data-pctf="1" inputmode="decimal" value="${rem}" placeholder="—" aria-label="Remise en %"><span class="suf" aria-hidden="true">%</span></span></td>
       <td class="calc" data-calc="lt-${l.id}">${lineTotalCell(l)}</td>
       <td><textarea class="cell" id="l-${l.id}-nt" data-f="notes" rows="1">${esc(l.notes)}</textarea></td>
       <td><button class="icon-btn" data-del="lignes" aria-label="Supprimer la ligne">×</button></td></tr>`;
