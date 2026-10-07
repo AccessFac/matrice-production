@@ -15,7 +15,7 @@ import { renderLogin, renderNoAccess } from "./views/auth.js";
 import { recapSoc, recapCat } from "./views/recap.js";
 import { enhanceTables, initResize } from "./ui/resize.js";
 import { autosizeAll, initAutosize } from "./ui/autosize.js";
-import { initSortable } from "./ui/sortable.js";
+import { initSortable, initCatalogueSortable } from "./ui/sortable.js";
 import { exportCsv } from "./export.js";
 
 const $ = id => document.getElementById(id);
@@ -81,6 +81,34 @@ function render() {
   enhanceTables(m);
   autosizeAll(m);
   if (S.tab === "devis" && P() && !S.readOnly) initSortable(m, reorderLines);
+  if (S.tab === "catalogue" && !S.readOnly) initCatalogueSortable(m, { onCatOrder: setCatOrder, onMoveRow: moveCatalogueRow });
+}
+
+/** Catalogue : nouvel ordre des catégories d'une société. */
+function setCatOrder(soc, cats) {
+  S.cfg.catOrder = { ...(S.cfg.catOrder || {}), [soc]: cats };
+  touch("cfg"); render();
+}
+
+/** Catalogue : prestation déposée dans un autre groupe → nouvelle société / catégorie. */
+function moveCatalogueRow(id, soc, cat) {
+  if (id) {
+    const c = S.cfg.catalogue.find(x => x.id === id);
+    if (c && (c.societe !== soc || c.categorie !== cat)) { c.societe = soc; c.categorie = cat; touch("cfg"); }
+  }
+  render();
+}
+
+/** Catalogue : nouvelle prestation dans une société et une catégorie données. */
+function addCatalogueRow(soc, cat) {
+  const row = { id: uid(), ...BLANK.catalogue(), societe: soc || "", categorie: cat || "" };
+  S.cfg.catalogue.push(row);
+  if (soc && cat) {
+    const order = (S.cfg.catOrder && S.cfg.catOrder[soc]) || [];
+    if (!order.includes(cat)) S.cfg.catOrder = { ...(S.cfg.catOrder || {}), [soc]: [...order, cat] };
+  }
+  touch("cfg"); render();
+  const f = $(`k-${row.id}-p`); if (f) f.focus();
 }
 
 /** Nouvel ordre des lignes après un glisser-déposer. */
@@ -135,6 +163,7 @@ document.addEventListener("click", e => {
   if (act === "logout") { const a = getAdapter(); if (a && a.signOut) a.signOut(); return; }
   if (S.readOnly) return;
 
+  if (t.dataset.addin) { const [soc, cat] = t.dataset.addin.split("|"); addCatalogueRow(soc, cat); return; }
   if (t.dataset.add) {
     const k = t.dataset.add;
     if (k === "catalogue") { S.cfg.catalogue.push({ id: uid(), ...BLANK.catalogue() }); touch("cfg"); }
@@ -194,6 +223,7 @@ document.addEventListener("change", e => {
   const el = e.target;
   if (el.id === "projSel") { S.currentId = el.value; confirmDelete = false; savePrefs(); render(); return; }
   if (S.readOnly || !el.closest("#main")) return;
+  if (el.classList.contains("add-cat")) { if (el.value) addCatalogueRow(el.dataset.soc, el.value); return; }
   const tr = el.closest("tr[data-row]");
   // Choisir une prestation du catalogue remplit la ligne
   if (tr && tr.dataset.row === "lignes" && el.dataset.f === "prestation") {

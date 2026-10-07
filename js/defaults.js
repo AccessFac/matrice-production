@@ -6,7 +6,8 @@ export const DEFAULT_CFG = {
   categories: [],
   natures: ["Salaire chargé", "Facture prestataire", "Location", "Transport", "Défraiements / repas", "Refacturation interne", "Achat / consommable", "Autre"],
   phases: [],
-  catalogue: []
+  catalogue: [],
+  catOrder: {}   // ordre des catégories, par société
 };
 
 /** Onglets de l'application. internal: true → marqué « interne ». */

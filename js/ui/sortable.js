@@ -15,3 +15,37 @@ export function initSortable(root, onReorder) {
     new Sortable(tb, { ...common, draggable: "tr[data-row]", handle: ".drag:not(.grp-drag)", group: { name: "lignes-" + i, pull: false, put: false } });
   });
 }
+
+/**
+ * Glisser-déposer du catalogue.
+ * - catégories (poignée de titre) : rangement à l'intérieur de leur société → onCatOrder(soc, [catégories]) ;
+ * - prestations : déposées dans un autre groupe → onMoveRow(id, société, catégorie).
+ */
+export function initCatalogueSortable(root, { onCatOrder, onMoveRow }) {
+  const Sortable = window.Sortable;
+  const table = root.querySelector('table[data-tbl="catalogue"]');
+  if (!Sortable || !table) return;
+  const common = { animation: 150, ghostClass: "drag-ghost", chosenClass: "drag-chosen" };
+
+  new Sortable(table, {
+    ...common, draggable: "tbody.cat-group", handle: ".cat-drag", group: { name: "cat-order", pull: false, put: false },
+    // une catégorie reste dans sa société
+    onMove: evt => evt.related.classList.contains("cat-group") && evt.related.dataset.soc === evt.dragged.dataset.soc,
+    onEnd: evt => {
+      const soc = evt.item.dataset.soc;
+      const cats = [...table.querySelectorAll("tbody.cat-group")].filter(tb => tb.dataset.soc === soc && tb.dataset.cat).map(tb => tb.dataset.cat);
+      onCatOrder(soc, cats);
+    }
+  });
+
+  table.querySelectorAll("tbody.cat-group").forEach(tb => {
+    new Sortable(tb, {
+      ...common, draggable: "tr[data-row]", handle: ".drag:not(.cat-drag)",
+      group: { name: "cat-rows", pull: true, put: to => !!(to.el.dataset.soc && to.el.dataset.cat) },
+      onEnd: evt => {
+        if (evt.to === evt.from) { onMoveRow(null); return; }   // même groupe : l'ordre reste alphabétique
+        onMoveRow(evt.item.dataset.id, evt.to.dataset.soc, evt.to.dataset.cat);
+      }
+    });
+  });
+}
