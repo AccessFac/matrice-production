@@ -250,3 +250,8 @@ tfoot td{padding:8px;font-weight:600;background:var(--surface-2);border-top:1px 
   .lists { grid-template-columns: minmax(0, 1fr); }
   .confirm { flex-wrap: wrap; }
 }
+
+/* Tout écran tactile (téléphone à l'horizontale, tablette) : champs à 16 px, sinon iOS zoome à la saisie */
+@media (pointer: coarse) {
+  input, select, textarea, .cell, .field input { font-size: 16px; }
+}

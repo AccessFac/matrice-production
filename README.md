@@ -67,6 +67,10 @@ La clé *anon* est publique par conception ; ce sont les règles de `schema.sql`
 GitHub Pages gratuit nécessite un dépôt **public** : le code est alors visible, mais pas les données
 (elles sont dans Supabase, protégées par connexion). `seed.sql` et les fichiers Excel sont exclus du dépôt.
 
+## Après une modification
+
+Dans `index.html`, augmenter le numéro `?v=…` de `styles.css` et `app.js` : les téléphones rechargent alors la nouvelle version au lieu de garder l'ancienne en mémoire.
+
 ## Tester sur son ordinateur
 
 Les modules JavaScript ne fonctionnent pas en double-cliquant sur `index.html`. Depuis le dossier :
