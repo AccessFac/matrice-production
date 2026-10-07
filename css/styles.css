@@ -303,3 +303,12 @@ tbody.cat-group tr.grp td.grp-total{font-weight:600;vertical-align:bottom}
 }
 /* Remise : place réservée au symbole % (y compris dans les fiches mobiles) */
 table[data-tbl] .pct-in .cell{padding-right:26px}
+
+/* Catalogue : sous-titres de catégorie à l'intérieur de chaque société */
+tr.subgrp td{padding:10px 8px 4px 26px;background:var(--surface);border-bottom:1px solid var(--line);font-size:13px}
+tr.subgrp td b{font-family:var(--f-display);font-weight:700}
+tr.subgrp td span{color:var(--muted);font-size:12px;margin-left:6px}
+tbody tr.subgrp:hover td{background:var(--surface)}
+@media (max-width:720px){
+  table[data-tbl] tbody tr.subgrp td{display:block;background:none;border:0;border-radius:0;padding:6px 2px 6px 14px}
+}

@@ -11,27 +11,36 @@ export function findInCatalogue(name) {
   return k ? S.cfg.catalogue.find(c => String(c.prestation || "").trim().toLowerCase() === k) : null;
 }
 
-/** Catalogue trié par société puis par prestation ; les lignes encore vides restent en bas. */
+/** Catalogue trié par société, puis catégorie, puis prestation ; les lignes encore vides restent en bas. */
 export function sortedCatalogue(cat = S.cfg.catalogue) {
   const empty = c => !c.societe && !c.prestation;
   return cat.slice().sort((a, b) =>
-    (empty(a) - empty(b)) || (!a.societe - !b.societe) || cmp(a.societe, b.societe) || cmp(a.prestation, b.prestation));
+    (empty(a) - empty(b)) || (!a.societe - !b.societe) || cmp(a.societe, b.societe)
+    || (!a.categorie - !b.categorie) || cmp(a.categorie, b.categorie) || cmp(a.prestation, b.prestation));
 }
 
 export function renderCatalogue() {
   const cat = S.cfg.catalogue;
   let h = `<section class="sec"><div class="sec-h"><h2>Catalogue des prestations <small>${cat.length} prestations</small></h2></div>
-  <p class="note">Classé par société puis par prestation. Tarifs par défaut, communs à tous les projets. Modifier un tarif ici ne change pas les devis déjà faits. « Planning » : la prestation mobilise une personne sur les phases d'équipe (alerte si la quantité dépasse les jours d'équipe).</p>
+  <p class="note">Classé par société, puis catégorie, puis prestation. Changer la catégorie ou la société d'une ligne la range automatiquement au bon endroit. Tarifs par défaut, communs à tous les projets. Modifier un tarif ici ne change pas les devis déjà faits. « Planning » : la prestation mobilise une personne sur les phases d'équipe (alerte si la quantité dépasse les jours d'équipe).</p>
   <div class="tbl-wrap"><table data-tbl="catalogue"><thead><tr>
     <th style="min-width:250px">Prestation</th><th style="min-width:160px">Catégorie</th><th style="min-width:340px">Description</th>
     <th style="min-width:150px">Société par défaut</th><th>Unité</th><th class="num">PU HT</th><th>Planning</th><th></th></tr></thead><tbody>`;
-  let group = null;
+  const socOf = x => x.societe || (x.prestation ? "Sans société" : "Nouvelles lignes");
+  const catOf = x => x.categorie || "Sans catégorie";
+  let group = null, sub = null;
   for (const c of sortedCatalogue(cat)) {
-    const g = c.societe || (c.prestation ? "Sans société" : "Nouvelles lignes");
+    const g = socOf(c);
     if (g !== group) {
-      group = g;
-      const n = cat.filter(x => (x.societe || (x.prestation ? "Sans société" : "Nouvelles lignes")) === g).length;
+      group = g; sub = null;
+      const n = cat.filter(x => socOf(x) === g).length;
       h += `<tr class="grp"><td colspan="8"><i class="dot" style="background:${socColor(c.societe)}"></i>${esc(g)} <span>${n}</span></td></tr>`;
+    }
+    const k = catOf(c);
+    if (k !== sub && g !== "Nouvelles lignes") {
+      sub = k;
+      const n = cat.filter(x => socOf(x) === g && catOf(x) === k).length;
+      h += `<tr class="subgrp"><td colspan="8"><b>${esc(k)}</b> <span>${n}</span></td></tr>`;
     }
     h += `<tr data-row="catalogue" data-id="${c.id}">
       <td><input class="cell" id="k-${c.id}-p" data-f="prestation" value="${esc(c.prestation)}"></td>
