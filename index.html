@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="css/styles.css?v=20261007-8">
+  <link rel="stylesheet" href="css/styles.css?v=20261007181246">
 </head>
 <body>
   <!-- Barre du haut : projet, actions, statut d'enregistrement, onglets -->
@@ -28,6 +28,35 @@
 
   <!-- Glisser-déposer des lignes -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-  <script type="module" src="js/app.js?v=20261007-8"></script>
+  <!-- import-map:début (généré par tools/bump_version.py) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "./js/adapters/claude.js": "./js/adapters/claude.js?v=20261007181246",
+      "./js/adapters/index.js": "./js/adapters/index.js?v=20261007181246",
+      "./js/adapters/local.js": "./js/adapters/local.js?v=20261007181246",
+      "./js/adapters/supabase.js": "./js/adapters/supabase.js?v=20261007181246",
+      "./js/app.js": "./js/app.js?v=20261007181246",
+      "./js/calc.js": "./js/calc.js?v=20261007181246",
+      "./js/config.js": "./js/config.js?v=20261007181246",
+      "./js/defaults.js": "./js/defaults.js?v=20261007181246",
+      "./js/export.js": "./js/export.js?v=20261007181246",
+      "./js/store.js": "./js/store.js?v=20261007181246",
+      "./js/ui/autosize.js": "./js/ui/autosize.js?v=20261007181246",
+      "./js/ui/resize.js": "./js/ui/resize.js?v=20261007181246",
+      "./js/ui/sortable.js": "./js/ui/sortable.js?v=20261007181246",
+      "./js/utils.js": "./js/utils.js?v=20261007181246",
+      "./js/views/auth.js": "./js/views/auth.js?v=20261007181246",
+      "./js/views/catalogue.js": "./js/views/catalogue.js?v=20261007181246",
+      "./js/views/couts.js": "./js/views/couts.js?v=20261007181246",
+      "./js/views/devis.js": "./js/views/devis.js?v=20261007181246",
+      "./js/views/listes.js": "./js/views/listes.js?v=20261007181246",
+      "./js/views/recap.js": "./js/views/recap.js?v=20261007181246",
+      "./js/views/resultat.js": "./js/views/resultat.js?v=20261007181246"
+    }
+  }
+  </script>
+  <!-- import-map:fin -->
+  <script type="module" src="js/app.js?v=20261007181246"></script>
 </body>
 </html>

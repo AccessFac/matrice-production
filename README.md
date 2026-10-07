@@ -69,7 +69,7 @@ GitHub Pages gratuit nécessite un dépôt **public** : le code est alors visibl
 
 ## Après une modification
 
-Dans `index.html`, augmenter le numéro `?v=…` de `styles.css` et `app.js` : les téléphones rechargent alors la nouvelle version au lieu de garder l'ancienne en mémoire.
+Lancer `python3 tools/bump_version.py` avant le commit : il met un nouveau numéro de version sur la feuille de style et sur chaque fichier JavaScript (dans `index.html`), pour que les navigateurs rechargent tout au lieu de garder l'ancienne version en mémoire.
 
 ## Tester sur son ordinateur
 
