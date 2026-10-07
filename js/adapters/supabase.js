@@ -2,7 +2,7 @@
  * Adaptateur Supabase (base PostgreSQL gratuite) : utilisé quand l'app est hébergée hors de claude.ai
  * (GitHub Pages, Netlify…). Table et règles d'accès : supabase/schema.sql.
  *
- * Connexion par lien magique envoyé par e-mail. Seules les adresses listées dans la table
+ * Connexion par e-mail + mot de passe. Seules les adresses listées dans la table
  * public.membres voient les données ; le rôle « edition » peut modifier, « lecture » seulement consulter.
  */
 const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js";
@@ -53,9 +53,10 @@ export function createSupabaseAdapter({ url, anonKey }) {
       return { online: true, readOnly: m.role !== "edition", user: { email }, canDownload: true };
     },
 
-    async signIn(email) {
-      const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split("#")[0] } });
+    async signIn(email, password) {
+      const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      // onAuthStateChange recharge la page une fois la session ouverte
     },
 
     async signOut() { await client.auth.signOut(); },

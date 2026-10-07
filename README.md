@@ -50,8 +50,9 @@ supabase/
 2. **SQL Editor** → coller `supabase/schema.sql` → **Run**. Vérifier l'adresse e-mail du premier membre à la fin du fichier.
 3. Toujours dans SQL Editor : coller `supabase/seed.sql` → **Run** (importe le catalogue et les projets).
 4. **Authentication → URL Configuration** : mettre l'adresse du site (ex. `https://<compte>.github.io/matrice-production/`) dans *Site URL* et *Redirect URLs*.
+   La connexion se fait par **e-mail + mot de passe**. Un compte se crée dans **Authentication → Users → Add user → Create new user** (cocher *Auto Confirm User*), puis son adresse s'ajoute à la table `membres`.
 5. **Project Settings → API** : copier *Project URL* et la clé *anon public* dans `js/config.js`.
-6. Ajouter les collègues : `insert into public.membres (email, role) values ('prenom@societe.com', 'edition');`
+6. Donner l'accès aux données : `insert into public.membres (email, role) values ('prenom@societe.com', 'edition');`
    (`'lecture'` pour un accès en consultation seule).
 
 La clé *anon* est publique par conception ; ce sont les règles de `schema.sql` qui protègent les données

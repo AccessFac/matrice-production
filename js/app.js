@@ -203,9 +203,17 @@ document.addEventListener("submit", async e => {
   if (e.target.id !== "login-form") return;
   e.preventDefault();
   const email = $("login-email").value.trim();
-  try { await getAdapter().signIn(email); loginMessage = `Lien envoyé à ${email}. Ouvrez-le depuis cet appareil pour vous connecter.`; }
-  catch (err) { loginMessage = "L'envoi a échoué : " + (err.message || err); }
-  render();
+  const password = $("login-password").value;
+  const btn = e.target.querySelector("button[type=submit]");
+  btn.disabled = true; btn.textContent = "Connexion…";
+  try { await getAdapter().signIn(email, password); loginMessage = ""; }
+  catch (err) {
+    const m = String((err && err.message) || err);
+    loginMessage = /invalid login credentials/i.test(m) ? "E-mail ou mot de passe incorrect." : "La connexion a échoué : " + m;
+    render();
+    const f = $("login-email"); if (f) f.value = email;
+    const p = $("login-password"); if (p) p.focus();
+  }
 });
 
 /* ---------- Démarrage ---------- */
