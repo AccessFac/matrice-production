@@ -11,14 +11,14 @@ import { renderCouts, groupCosts, costGroupKey, costGroupTotal } from "./views/c
 import { renderResultat } from "./views/resultat.js";
 import { renderCatalogue, findInCatalogue } from "./views/catalogue.js";
 import { coutsBase } from "./views/coutsBase.js";
-import { CATALOGS } from "./views/catalog.js";
+import { CATALOGS, editingRows } from "./views/catalog.js";
 import { renameEverywhere } from "./rename.js";
 import { renderListes } from "./views/listes.js";
 import { renderLogin, renderNoAccess } from "./views/auth.js";
 import { recapSoc, recapCat } from "./views/recap.js";
 import { enhanceTables, initResize } from "./ui/resize.js";
 import { autosizeAll, initAutosize } from "./ui/autosize.js";
-import { initSortable, initCatalogueSortable } from "./ui/sortable.js";
+import { initSortable } from "./ui/sortable.js";
 import { exportCsv } from "./export.js";
 
 const $ = id => document.getElementById(id);
@@ -91,7 +91,6 @@ function render() {
   autosizeAll(m);
   if (S.tab === "devis" && P() && !S.readOnly) initSortable(m, ids => reorder("lignes", ids));
   if (S.tab === "couts" && P() && !S.readOnly) initSortable(m, ids => reorder("couts", ids), "couts");
-  if (CATALOGS[S.tab] && !S.readOnly) initCatalogueSortable(m, { onMoveRow: (id, soc, cat) => { if (id && CATALOGS[S.tab].move(id, soc, cat)) touch("cfg"); render(); } }, S.tab);
 }
 
 /** Catalogue (prestations ou coûts) : nouvel élément, éventuellement déjà rangé. */
@@ -171,6 +170,11 @@ document.addEventListener("click", e => {
   if (act === "logout") { const a = getAdapter(); if (a && a.signOut) a.signOut(); return; }
   if (S.readOnly) return;
 
+  if (t.dataset.editrow) {                                // catalogue : menus société / catégorie
+    const tr = t.closest("tr"), id = tr.dataset.id, on = !tr.classList.contains("editing");
+    on ? editingRows.add(id) : editingRows.delete(id);
+    tr.classList.toggle("editing", on); return;
+  }   // catalogue : menus société / catégorie
   if (t.dataset.foldall) { const C = CATALOGS[t.dataset.kind]; if (C) { C.setAllCollapsed(t.dataset.foldall === "1"); render(); } return; }
   if (t.dataset.addin) { const [soc, cat] = t.dataset.addin.split("|"); addCatalogRow(t.dataset.kind, soc, cat); return; }
   if (t.dataset.add) {
@@ -265,6 +269,10 @@ document.addEventListener("change", e => {
       const q = $(`c-${row.id}-q`); if (q) { q.focus(); q.select(); }
     }
     return;
+  }
+  if (tr && CATALOGS[tr.dataset.row] && el.classList.contains("pick")) {
+    const it = CATALOGS[tr.dataset.row].items().find(x => x.id === tr.dataset.id);
+    if (it && it.societe && it[CATALOGS[tr.dataset.row].spec.catField]) editingRows.delete(tr.dataset.id);
   }
   if (el.tagName === "SELECT" || el.type === "checkbox") {
     if (S.tab !== "devis" || el.type === "checkbox" || el.dataset.f === "unite") render(); else refreshCalc();

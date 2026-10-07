@@ -15,9 +15,9 @@ export const TABS = [
   { id: "devis", label: "Devis" },
   { id: "couts", label: "Coûts", internal: true },
   { id: "resultat", label: "Résultat", internal: true },
-  { id: "catalogue", label: "Catalogue" },
+  { id: "catalogue", label: "Catalogue", internal: true },
   { id: "coutsbase", label: "Catalogue coûts", internal: true },
-  { id: "listes", label: "Listes" }
+  { id: "listes", label: "Listes", internal: true }
 ];
 
 /** Couleurs fixes par société (variables dans css/styles.css). La clé est le nom en minuscules, sans espaces. */

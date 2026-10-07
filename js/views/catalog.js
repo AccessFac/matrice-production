@@ -2,7 +2,7 @@
  * Moteur commun des catalogues (prestations, coûts) : Société → Catégorie → éléments.
  * - classement alphabétique ;
  * - sociétés et catégories repliables d'un clic sur leur ligne de titre (mémorisé dans le navigateur) ;
- * - glisser un élément (poignée ⠿) dans un autre groupe change sa catégorie et sa société ;
+ * - le bouton ✎ d'une ligne affiche ses menus Société / Catégorie (la ligne se range d'elle-même) ;
  * - « + Catégorie… » sur une société, « + Élément » sur une catégorie.
  *
  * Chaque catalogue est décrit par une « spec » (voir catalogue.js et coutsBase.js).
@@ -16,6 +16,9 @@ const norm = s => String(s || "").trim().toLowerCase();
 
 /** Catalogues déclarés, par type (catalogue, coutsbase). */
 export const CATALOGS = {};
+
+/** Lignes dont les menus Société / Catégorie sont ouverts (bouton ✎) — conservé entre deux affichages. */
+export const editingRows = new Set();
 
 export function makeCatalog(spec) {
   const items = () => S.cfg[spec.listKey] || (S.cfg[spec.listKey] = []);
@@ -49,11 +52,14 @@ export function makeCatalog(spec) {
 
   function row(c) {
     const ph = label => `<option value="">${label}…</option>`;
-    const pick = (!c.societe ? `<select class="cell pick" id="${P}-${c.id}-s" data-f="societe" aria-label="Société">${opts(S.cfg.societes, "", true).replace('<option value=""></option>', ph("Société"))}</select>` : "")
-      + (!cat(c) ? `<select class="cell pick" id="${P}-${c.id}-c" data-f="${spec.catField}" aria-label="${spec.catLabel}">${opts(spec.catList(), "", true).replace('<option value=""></option>', ph(spec.catLabel))}</select>` : "");
-    return `<tr data-row="${K}" data-id="${c.id}">
-      <td><div class="presta"><span class="drag" title="Glisser vers une autre catégorie ou société" aria-label="Déplacer">⠿</span>
-        <input class="cell" id="${P}-${c.id}-p" data-f="${spec.nameField}" value="${esc(name(c))}" placeholder="${esc(spec.namePlaceholder)}"></div>${pick ? `<div class="picks">${pick}</div>` : ""}</td>
+    const missing = !c.societe || !cat(c);
+    const picks = `<div class="picks">
+        <select class="cell pick" id="${P}-${c.id}-s" data-f="societe" aria-label="Société">${ph("Société") + opts(S.cfg.societes, c.societe, false)}</select>
+        <select class="cell pick" id="${P}-${c.id}-c" data-f="${spec.catField}" aria-label="${spec.catLabel}">${ph(spec.catLabel) + opts(spec.catList(), cat(c), false)}</select></div>`;
+    return `<tr data-row="${K}" data-id="${c.id}" class="${missing || editingRows.has(c.id) ? "editing" : ""}">
+      <td><div class="presta">
+        <input class="cell" id="${P}-${c.id}-p" data-f="${spec.nameField}" value="${esc(name(c))}" placeholder="${esc(spec.namePlaceholder)}">
+        <button class="icon-btn edit-btn" data-editrow="1" title="Changer la société ou la ${spec.catLabel.toLowerCase()}" aria-label="Changer la société ou la ${spec.catLabel.toLowerCase()}">✎</button></div>${picks}</td>
       <td><textarea class="cell" id="${P}-${c.id}-d" data-f="description" rows="1">${esc(c.description)}</textarea></td>
       ${spec.columns.map(col => col.td(c, P)).join("")}
       <td><button class="icon-btn" data-del="${K}" aria-label="Supprimer">×</button></td></tr>`;
@@ -107,7 +113,7 @@ export function makeCatalog(spec) {
     return row;
   }
 
-  /** Élément déposé dans un autre groupe. */
+  /** Élément rangé dans un autre groupe. */
   function move(id, soc, c) {
     const it = items().find(x => x.id === id);
     if (!it || (it.societe === soc && cat(it) === c)) return false;

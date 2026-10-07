@@ -318,7 +318,7 @@ tbody.soc-head tr.grp td{padding:16px 8px 8px;background:var(--bg);border-bottom
 tbody.cat-group tr.subgrp td{padding:8px 8px 6px 14px}
 .grp-in .add-cat{width:auto;margin-left:auto;font-family:var(--f-body);font-size:12.5px;color:var(--muted);border:1px dashed var(--line-strong);padding:4px 6px}
 .grp-in .add-in{margin-left:auto;font-size:12px;padding:3px 8px}
-.picks{display:flex;gap:6px;padding:4px 0 2px 26px}
+.picks{gap:6px;padding:4px 0 2px 4px}
 .picks .cell{border-color:var(--warn);background:var(--warn-soft);width:auto;flex:1}
 .ro .add-cat,.ro .add-in,.ro .picks{display:none}
 @media (max-width:720px){
@@ -357,3 +357,14 @@ tr.foldable:hover b { text-decoration: underline; text-underline-offset: 3px; }
   table[data-tbl] tbody tr[data-row] td:first-child:not(.soc-cell) { grid-column: 1 / -1; }
   .tag-int { margin-left: 0; }
 }
+
+/* Catalogues : menus société / catégorie d'une ligne (bouton ✎), cachés par défaut */
+tr[data-row] .picks { display: none; }
+tr[data-row].editing .picks { display: flex; }
+.picks { padding-left: 4px; }
+.picks .cell { border-color: var(--line-strong); background: var(--input); }
+tr[data-row].editing .picks .cell:invalid, tr[data-row].editing .picks .cell option[value=""]:checked { color: var(--warn); }
+.edit-btn { font-size: 14px; flex: none; }
+.edit-btn:hover { color: var(--accent); background: var(--accent-soft); }
+tr.editing .edit-btn { color: var(--accent); }
+.ro .edit-btn { display: none; }
