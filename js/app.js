@@ -4,7 +4,7 @@
  */
 import { S, P, initStore, touch, newProject, deleteProject, sortedIds, savePrefs, isSaving, getAdapter } from "./store.js";
 import { TABS, BLANK } from "./defaults.js";
-import { calc, costTotal } from "./calc.js";
+import { calc, costTotal, syncFromCatalogue } from "./calc.js";
 import { esc, eur, num, nstr, uid } from "./utils.js";
 import { renderDevis, lineTotalCell, groupLines, groupKey, groupTotal } from "./views/devis.js";
 import { renderCouts } from "./views/couts.js";
@@ -71,6 +71,8 @@ function render() {
   if (!S.online) h += `<div class="banner">Le stockage n'est pas disponible${S.error ? " (" + esc(S.error) + ")" : ""}. Vérifiez la connexion ou la configuration dans js/config.js.</div>`;
   if (S.auth && S.auth.localOnly) h += `<div class="banner info">Mode local : les données restent dans ce navigateur. Configurez Supabase dans js/config.js pour les partager.</div>`;
 
+  // Le devis suit le catalogue (prix, société, catégorie…) : mise à jour et enregistrement si besoin
+  if (P() && !S.readOnly && syncFromCatalogue(P(), S.cfg.catalogue)) touch(S.currentId);
   if (S.tab === "catalogue") h += renderCatalogue();
   else if (S.tab === "listes") h += renderListes();
   else if (!P()) h += `<div class="empty"><h2>Aucun projet pour l'instant</h2><p>Un projet regroupe le devis client, le planning, les coûts et le résultat par société. Commencez par en créer un : le catalogue préremplira les prix.</p>${S.readOnly || !S.online ? "" : `<button class="btn primary" data-act="new">Créer un projet</button>`}</div>`;
@@ -231,7 +233,7 @@ document.addEventListener("change", e => {
     const item = findInCatalogue(el.value);
     const row = P().lignes.find(x => x.id === tr.dataset.id);
     if (item && row) {
-      Object.assign(row, { prestation: item.prestation, categorie: item.categorie, description: item.description, societe: item.societe, unite: item.unite, pu: item.pu, presence: !!item.presence });
+      Object.assign(row, { catId: item.id, prestation: item.prestation, categorie: item.categorie, description: item.description, societe: item.societe, unite: item.unite, pu: item.pu, presence: !!item.presence });
       if (row.quantite === null || row.quantite === undefined) row.quantite = 1;
       touch(S.currentId); render();
       const q = $(`l-${row.id}-q`); if (q) { q.focus(); q.select(); }

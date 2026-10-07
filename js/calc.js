@@ -81,3 +81,24 @@ export function dayAlert(l, r) {
   if (q === null || r.joursEquipe === 0 || q <= r.joursEquipe) return "";
   return `${nstr(q)} j facturés pour ${nstr(r.joursEquipe)} j d'équipe au planning`;
 }
+
+/**
+ * Aligne les lignes d'un projet sur le catalogue : société, catégorie, prix HT, description,
+ * présence planning — et le nom si la prestation a été renommée dans le catalogue.
+ * Lien par identifiant (catId) une fois établi, sinon par nom (sans tenir compte des majuscules).
+ * Renvoie true si quelque chose a changé (le projet doit alors être enregistré).
+ */
+export function syncFromCatalogue(p, catalogue) {
+  if (!p || !Array.isArray(p.lignes)) return false;
+  const byId = new Map(catalogue.map(c => [c.id, c]));
+  const byName = new Map(catalogue.filter(c => c.prestation).map(c => [String(c.prestation).trim().toLowerCase(), c]));
+  let changed = false;
+  for (const l of p.lignes) {
+    const item = (l.catId && byId.get(l.catId)) || byName.get(String(l.prestation || "").trim().toLowerCase());
+    if (!item) continue;
+    const next = { catId: item.id, prestation: item.prestation, societe: item.societe || "", categorie: item.categorie || "",
+                   pu: item.pu ?? null, description: item.description || "", presence: !!item.presence };
+    for (const [k, v] of Object.entries(next)) if (l[k] !== v) { l[k] = v; changed = true; }
+  }
+  return changed;
+}

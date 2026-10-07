@@ -77,7 +77,7 @@ function lignes(p, r) {
   const names = sortedCatalogue().map(c => c.prestation).filter(Boolean);
   const COLS = 9;
   let h = `<datalist id="dl-presta">${names.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
-  <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Lignes regroupées par catégorie. Glissez ⠿ pour changer l'ordre d'une ligne ou d'une catégorie. Société et prix HT viennent du catalogue.</span></div>
+  <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Lignes regroupées par catégorie. Glissez ⠿ pour changer l'ordre d'une ligne ou d'une catégorie. Société et prix HT viennent du catalogue et se mettent à jour quand il change.</span></div>
   <div class="tbl-wrap"><table data-tbl="lignes"><thead><tr>
     <th style="min-width:270px">Prestation</th><th style="min-width:150px">Société</th>
     <th>Unité</th><th class="num">Qté</th><th class="num">PU HT</th><th class="num" title="Remise en % sur la ligne">Remise</th>
