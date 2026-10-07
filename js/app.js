@@ -59,7 +59,9 @@ function renderTop() {
 function render() {
   renderTop();
   const m = $("main");
-  document.body.classList.toggle("ro", S.readOnly);
+  const authScreen = !!(S.auth && (S.auth.needsAuth || S.auth.noAccess));
+  // Le mode lecture seule désactive les champs : jamais sur l'écran de connexion
+  document.body.classList.toggle("ro", S.readOnly && !authScreen);
   let h = "";
   if (S.auth && S.auth.needsAuth) { m.innerHTML = renderLogin(loginMessage); return; }
   if (S.auth && S.auth.noAccess) { m.innerHTML = renderNoAccess(); return; }

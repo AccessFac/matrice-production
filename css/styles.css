@@ -169,3 +169,5 @@ tfoot td{padding:8px;font-weight:600;background:var(--surface-2);border-top:1px 
 .auth form{display:flex;flex-direction:column;gap:10px}
 .who{font-size:12px;color:var(--muted);white-space:nowrap}
 
+/* Écran de connexion toujours utilisable ; 16px évite le zoom automatique sur iPhone */
+.auth input{pointer-events:auto;font-size:16px}
