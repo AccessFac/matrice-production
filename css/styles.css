@@ -107,7 +107,7 @@ td.lbl{padding:8px 8px}
 .cell:hover{border-color:var(--line)}
 .cell:focus{border-color:var(--accent);background:var(--input);outline:none}
 .cell.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-textarea.cell{resize:vertical;min-height:30px;line-height:1.35;display:block}
+textarea.cell{resize:none;overflow:hidden;min-height:30px;line-height:1.35;display:block}
 select.cell{cursor:pointer;appearance:auto}
 .cell::placeholder{color:var(--faint)}
 .cell.need{background:var(--warn-soft)}
@@ -254,4 +254,13 @@ tfoot td{padding:8px;font-weight:600;background:var(--surface-2);border-top:1px 
 /* Tout écran tactile (téléphone à l'horizontale, tablette) : champs à 16 px, sinon iOS zoome à la saisie */
 @media (pointer: coarse) {
   input, select, textarea, .cell, .field input { font-size: 16px; }
+}
+
+/* Catalogue : en-têtes de groupe par société */
+tr.grp td{padding:14px 8px 6px;background:var(--bg);border-bottom:1px solid var(--line-strong);font-family:var(--f-display);font-weight:600;font-size:13.5px}
+tr.grp td .dot{margin-right:8px;vertical-align:1px}
+tr.grp td span{font-family:var(--f-body);font-weight:400;color:var(--muted);margin-left:6px;font-size:12px}
+tbody tr.grp:hover td{background:var(--bg)}
+@media (max-width:720px){
+  table[data-tbl] tbody tr.grp td{display:block;background:none;border:0;border-radius:0;padding:14px 2px 6px}
 }

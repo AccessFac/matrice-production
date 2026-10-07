@@ -1,15 +1,32 @@
 /** Onglet Catalogue : prestations types et tarifs par défaut, communs à tous les projets. */
 import { S } from "../store.js";
 import { esc, nstr, opts } from "../utils.js";
+import { socColor } from "./recap.js";
+
+const cmp = (a, b) => String(a || "").localeCompare(String(b || ""), "fr", { sensitivity: "base", numeric: true });
+
+/** Catalogue trié par société puis par prestation ; les lignes encore vides restent en bas. */
+export function sortedCatalogue(cat = S.cfg.catalogue) {
+  const empty = c => !c.societe && !c.prestation;
+  return cat.slice().sort((a, b) =>
+    (empty(a) - empty(b)) || (!a.societe - !b.societe) || cmp(a.societe, b.societe) || cmp(a.prestation, b.prestation));
+}
 
 export function renderCatalogue() {
   const cat = S.cfg.catalogue;
   let h = `<section class="sec"><div class="sec-h"><h2>Catalogue des prestations <small>${cat.length} prestations</small></h2></div>
-  <p class="note">Tarifs par défaut, communs à tous les projets. Modifier un tarif ici ne change pas les devis déjà faits. « Planning » : la prestation mobilise une personne sur les phases d'équipe (alerte si la quantité dépasse les jours d'équipe).</p>
+  <p class="note">Classé par société puis par prestation. Tarifs par défaut, communs à tous les projets. Modifier un tarif ici ne change pas les devis déjà faits. « Planning » : la prestation mobilise une personne sur les phases d'équipe (alerte si la quantité dépasse les jours d'équipe).</p>
   <div class="tbl-wrap"><table data-tbl="catalogue"><thead><tr>
-    <th style="min-width:250px">Prestation</th><th style="min-width:160px">Catégorie</th><th style="min-width:260px">Description</th>
+    <th style="min-width:250px">Prestation</th><th style="min-width:160px">Catégorie</th><th style="min-width:340px">Description</th>
     <th style="min-width:150px">Société par défaut</th><th>Unité</th><th class="num">PU HT</th><th>Planning</th><th></th></tr></thead><tbody>`;
-  for (const c of cat) {
+  let group = null;
+  for (const c of sortedCatalogue(cat)) {
+    const g = c.societe || (c.prestation ? "Sans société" : "Nouvelles lignes");
+    if (g !== group) {
+      group = g;
+      const n = cat.filter(x => (x.societe || (x.prestation ? "Sans société" : "Nouvelles lignes")) === g).length;
+      h += `<tr class="grp"><td colspan="8"><i class="dot" style="background:${socColor(c.societe)}"></i>${esc(g)} <span>${n}</span></td></tr>`;
+    }
     h += `<tr data-row="catalogue" data-id="${c.id}">
       <td><input class="cell" id="k-${c.id}-p" data-f="prestation" value="${esc(c.prestation)}"></td>
       <td><select class="cell" id="k-${c.id}-c" data-f="categorie">${opts(S.cfg.categories, c.categorie)}</select></td>

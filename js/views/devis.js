@@ -3,6 +3,7 @@ import { S, P } from "../store.js";
 import { calc, lineTotal, lineGross, dayAlert } from "../calc.js";
 import { esc, eur, num, nstr, opts } from "../utils.js";
 import { recapSoc, recapCat } from "./recap.js";
+import { sortedCatalogue } from "./catalogue.js";
 
 /** Contenu de la cellule « Total HT » d'une ligne (avec le montant avant remise s'il y en a une). */
 export function lineTotalCell(l) {
@@ -40,7 +41,7 @@ function planning(p, r) {
 }
 
 function lignes(p, r) {
-  const names = S.cfg.catalogue.map(c => c.prestation).filter(Boolean);
+  const names = sortedCatalogue().map(c => c.prestation).filter(Boolean);
   let h = `<datalist id="dl-presta">${names.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
   <section class="sec"><div class="sec-h"><h2>Prestations</h2><span class="note">Choisissez une prestation du catalogue : catégorie, société, unité et prix se remplissent. La description reste dans le catalogue.</span></div>
   <div class="tbl-wrap"><table data-tbl="lignes"><thead><tr>

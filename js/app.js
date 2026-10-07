@@ -14,6 +14,7 @@ import { renderListes } from "./views/listes.js";
 import { renderLogin, renderNoAccess } from "./views/auth.js";
 import { recapSoc, recapCat } from "./views/recap.js";
 import { enhanceTables, initResize } from "./ui/resize.js";
+import { autosizeAll, initAutosize } from "./ui/autosize.js";
 import { exportCsv } from "./export.js";
 
 const $ = id => document.getElementById(id);
@@ -77,6 +78,7 @@ function render() {
   else if (S.tab === "resultat") h += renderResultat();
   m.innerHTML = h;
   enhanceTables(m);
+  autosizeAll(m);
 }
 
 /** Ne pas reconstruire la page pendant une saisie : on attend que le champ perde le focus. */
@@ -220,5 +222,6 @@ document.addEventListener("submit", async e => {
 
 /* ---------- Démarrage ---------- */
 initResize();
+initAutosize();
 render();
 initStore(kind => (kind === "status" ? refreshStatus() : requestRender()));
